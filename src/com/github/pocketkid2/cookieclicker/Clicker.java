@@ -10,6 +10,8 @@ import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -31,10 +33,15 @@ public class Clicker extends JPanel implements MouseListener {
 	private BufferedImage image;
 
 	// The counter object
-	private Cookie count;
+	Cookie count = new Cookie();
 	
 	// Whether we have the mouse pressed down or not
 	private boolean isPressed;
+
+	// Whether we need to dispaly a message
+	public static boolean messageVisible;
+	// What that message is
+	private String messageString;
 	
 	public Clicker() {
 		try {
@@ -44,12 +51,28 @@ public class Clicker extends JPanel implements MouseListener {
 			System.out.println("Error reading image");
 			e.printStackTrace();
 		}
-		// A cookie increment option (it seems pointless but it allows for future possibilities
-		count = new Cookie();
+		
+		// Set up some things
 		setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 		addMouseListener(this);
+		
 		// Initialize to false
 		isPressed = false;
+	}
+	
+	public void drawMessage(String s) {
+		messageVisible = true;
+		messageString = s;
+		
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				Clicker.messageVisible = false;
+			}
+			
+		}, 1000);
 	}
 	
 	@Override
@@ -64,8 +87,14 @@ public class Clicker extends JPanel implements MouseListener {
 		g2d.setRenderingHints(rh);
 
 		// Pick a nice-ish font
-		g2d.setFont(new Font("Tahoma", Font.BOLD, FONT_SIZE));
+		g2d.setFont(new Font("Tahoma", Font.BOLD, FONT_SIZE / 2));
+
+		if (Clicker.messageVisible) {
+			g2d.drawString(messageString, 100, 50);
+		}
 		
+		g2d.setFont(new Font("Tahoma", Font.BOLD, FONT_SIZE));
+
 		// Draw the cookie and the counter separately
 		drawCookie(g2d);
 		drawCounter(g2d);
